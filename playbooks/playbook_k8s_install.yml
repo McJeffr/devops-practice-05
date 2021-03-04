@@ -1,0 +1,36 @@
+---
+- hosts: cluster
+  become: true
+  tasks:
+    - name: Install container runtime environment
+      apt:
+        pkg:
+          - containerd
+          - apt-transport-https
+        state: latest
+
+    - name: Add the signing GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Install Kubernetes
+      apt:
+        pkg:
+          - kubelet
+          - kubeadm
+          - kubernetes-cni
+        state: latest
+
+    - name: Enable br_netfilter module
+      shell: modprobe br_netfilter
+
+    - name: "Set up network bridge: enable IPv4 forwarding"
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'

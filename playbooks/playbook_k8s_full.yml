@@ -1,0 +1,105 @@
+---
+- hosts: cluster
+  become: true
+  tasks:
+    - name: Install container runtime environment
+      apt:
+        pkg:
+          - containerd
+          - apt-transport-https
+        state: latest
+
+    - name: Add the signing GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Install Kubernetes
+      apt:
+        pkg:
+          - kubelet
+          - kubeadm
+          - kubernetes-cni
+        state: latest
+
+- hosts: k8s_master
+  become: true
+  tasks:
+    - name: Enable br_netfilter module
+      shell: modprobe br_netfilter
+
+    - name: "Set up network bridge: bridge-nf-call-iptables"
+      ansible.posix.sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: '1'
+
+    - name: "Set up network bridge: enable IPv4 forwarding"
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+
+    - name: Reset kubeadm
+      shell: kubeadm reset --force
+
+    - name: Init kubeadm
+      shell: kubeadm init
+
+    - name: Create .kube directory
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: '0755'
+
+    - name: Copy default configuration file over
+      copy:
+        remote_src: true
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        owner: "{{ ansible_ssh_user }}"
+        group: "{{ ansible_ssh_user }}"
+        mode: '0644'
+
+    - name: Install Weave Net addon
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+    - name: Allow master to schedule pods
+      shell:  kubectl taint nodes --all node-role.kubernetes.io/master-
+
+    - name: Print kubeadm join command
+      shell: kubeadm token create --print-join-command
+      register: kubeadm_output
+
+    - name: Store the join command in a cross-host variable
+      add_host:
+        name: "kubeadm_join_command"
+        joincmd: "{{ kubeadm_output.stdout }}"
+
+- hosts: k8s_worker
+  become: true
+  tasks:
+    - name: Enable br_netfilter module
+      shell: modprobe br_netfilter
+
+    - name: "Set up network bridge: enable IPv4 forwarding"
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+
+    - name: "Join the cluster"
+      shell: "{{ hostvars['kubeadm_join_command']['joincmd'] }}"
+
+- hosts: k8s_master
+  become: true
+  tasks:
+    - name: Verify that workers have joined
+      shell: kubectl get nodes
+      register: kubectl_output
+    
+    - name: Print worker nodes
+      debug:
+        msg: "{{ kubectl_output.stdout }}"

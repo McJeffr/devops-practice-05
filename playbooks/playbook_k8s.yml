@@ -1,0 +1,12 @@
+---
+- name: Setup all nodes in the cluster
+  import_playbook: playbook_k8s_install.yml
+
+- name: Setup master node
+  import_playbook: playbook_k8s_setup-master.yml
+
+- name: Join the cluster
+  import_playbook: playbook_k8s_join.yml
+
+- name: Verify cluster joined
+  import_playbook: playbook_k8s_verify.yml

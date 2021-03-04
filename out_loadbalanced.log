@@ -1,0 +1,53 @@
+This is ApacheBench, Version 2.3 <$Revision: 1843412 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking ec2-3-236-106-24.compute-1.amazonaws.com (be patient)
+Completed 5000 requests
+Completed 10000 requests
+Completed 15000 requests
+Completed 20000 requests
+Completed 25000 requests
+Completed 30000 requests
+Completed 35000 requests
+Completed 40000 requests
+Completed 45000 requests
+Completed 50000 requests
+Finished 50000 requests
+
+
+Server Software:        nginx/1.19.7
+Server Hostname:        ec2-3-236-106-24.compute-1.amazonaws.com
+Server Port:            31580
+
+Document Path:          /
+Document Length:        612 bytes
+
+Concurrency Level:      500
+Time taken for tests:   53.364 seconds
+Complete requests:      50000
+Failed requests:        0
+Total transferred:      42250000 bytes
+HTML transferred:       30600000 bytes
+Requests per second:    936.96 [#/sec] (mean)
+Time per request:       533.638 [ms] (mean)
+Time per request:       1.067 [ms] (mean, across all concurrent requests)
+Transfer rate:          773.18 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2   2.8      1      30
+Processing:     0  529 144.3    592     701
+Waiting:        0  528 144.9    592     700
+Total:          1  531 143.1    595     701
+
+Percentage of the requests served within a certain time (ms)
+  50%    595
+  66%    598
+  75%    599
+  80%    600
+  90%    603
+  95%    606
+  98%    687
+  99%    689
+ 100%    701 (longest request)

@@ -1,0 +1,14 @@
+[aws-ubuntu]
+ec2-52-204-122-164.compute-1.amazonaws.com
+ec2-54-85-9-193.compute-1.amazonaws.com
+
+[aws:children]
+aws-ubuntu
+
+[aws:vars]
+ansible_ssh_private_key_file=~/.ssh/wsl.pem
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[aws-ubuntu:vars]
+ansible_ssh_user=ubuntu
+
